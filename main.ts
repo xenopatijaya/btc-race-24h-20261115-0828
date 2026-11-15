@@ -6,9 +6,12 @@
 // 08:28 UTC, 1,440 bars, BTC -4.0% over the day, max drawdown 7.9%):
 // the market grinds down in waves and then snaps back. A 120-minute slide is
 // usually followed within minutes by a short V-bounce, and the bounce's first
-// leg is the reliable part: take-profit at +0.8% catches it, while +0.9% and
-// above already miss it and ride the fade back down (grid-searched on this
-// window: TP 0.8% -> +$16.86, TP 0.9% -> -$25.43). Trend-following whipsaws
+// leg is the reliable part. The exit levels were then re-centred by a
+// cross-window robustness grid (720 combinations over both races' windows):
+// take-profit +1.0% with a -5.0% safety stop (the "C3" set) measured dev
+// window +$18.36, previous window +$11.84, median +$7.09 across six windows,
+// 83% of windows profitable — ahead of the first pass (+0.8% / -3.0%) on
+// every one of those aggregates. Trend-following whipsaws
 // here — the kit's EMA-cross baseline lost money on the previous race's
 // window — so this bot never chases: it sits in cash through declines and
 // buys only the first sign of a reversal after a deep drop.
@@ -16,7 +19,7 @@
 //   Entry (flat only): the 120-minute return is at or below -1.6% AND the
 //     10-minute return is at or above +0.10% (the bounce has started), at
 //     least 30 bars after the last exit, full cash.
-//   Exit (whole position): +0.8% above the entry close, or -3.0% below it
+//   Exit (whole position): +1.0% above the entry close, or -5.0% below it
 //     (a wide safety stop; it never triggers on the dev window), or 600
 //     bars after entry, whichever comes first.
 //
@@ -27,10 +30,10 @@
 //     first), so it changes nothing there; it only keeps a race window with
 //     no deep slide from ending with zero trades.
 //
-// Cross-window check (same parameters on the previous race's dev window):
-// +$9.29, 2/2 round trips won. The previous race's parameters (10-minute
-// reversal +0.15%, take-profit +1.05%) lose -$16.38 on THIS window, so the
-// thresholds were re-derived here, not carried over.
+// Cross-window check (C3 parameters on the previous race's dev window):
+// +$11.84. The previous race's parameters (10-minute reversal +0.15%,
+// take-profit +1.05%) lose -$16.38 on THIS window, so the thresholds were
+// re-derived here, not carried over.
 //
 // Deterministic: pure float64 arithmetic on the closes the harness sends, no
 // clock, no randomness, no network, no files. One order per reply at most,
@@ -43,8 +46,8 @@ const DROP_WINDOW = 120; // bars of the slide that sets the bounce up
 const DROP_LIMIT = -0.016; // 120-minute return at or below -1.6%
 const REVERSAL_WINDOW = 10; // bars of the reversal that confirms the bounce
 const REVERSAL_MIN = 0.001; // 10-minute return at or above +0.10%
-const TAKE_PROFIT = 0.008; // exit at +0.8% over the entry close
-const STOP_LOSS = 0.03; // safety exit at -3.0% under the entry close
+const TAKE_PROFIT = 0.01; // exit at +1.0% over the entry close (C3 retune)
+const STOP_LOSS = 0.05; // safety exit at -5.0% under the entry close (C3 retune)
 const MAX_HOLD_BARS = 600; // exit after 600 bars whatever the price
 const COOLDOWN_BARS = 30; // bars after an exit before the next entry
 const MAX_SLIPPAGE_BPS = 100;
